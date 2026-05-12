@@ -1,59 +1,67 @@
-# Tabellen
+# Pydantic Tabellen
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 
 class Material(BaseModel):
-    material_id: int
+    id: int
     material: str
     is_active: bool
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class User(BaseModel):
-    user_id: int
-    user_name: str
+    id: int
+    name: str
     pwd: str
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class Category(BaseModel):
-    category_id: int
+    id: int
     category: str
     is_active: bool
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class Priority(BaseModel):
-    priority_id: int
+    id: int
     priority: str
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class Progress(BaseModel):
-    progress_id: int
+    id: int
     progress: str
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class Task(BaseModel):
-    task_id: int
+    id: int
     title: str
-    start: datetime
-    end: datetime
-    place: str
-    coordinates: str
-    note: str
+    begin: Optional[datetime] = None
+    end: Optional[datetime] = None
+    place: Optional[str] = None
+    coordinates: Optional[str] = None
+    notice: Optional[str] = None
     category_id: int
-    progress_id: int
     priority_id: int
+    progress_id: int
     user_id: int
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
+class TaskMaterial(BaseModel):
+    task_id: int
+    material_id: int
+    amount: int
+
+    class Config:
+        orm_mode = True

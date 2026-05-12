@@ -46,7 +46,7 @@ class Task(Base):
     title = Column("Titel", String(100), nullable=False)
     begin = Column("Beginn", DateTime, nullable=True)
     end = Column("Ende", DateTime, nullable=True)
-    ort = Column("Ort", String(250), nullable=True)
+    place = Column("Ort", String(250), nullable=True)
     coordinates = Column("Koordinaten", String(250), nullable=True)
     notice = Column("Notiz", Text, nullable=True)
     category_id = Column("KategorieID", Integer, ForeignKey("Kategorie.KategorieID"))
