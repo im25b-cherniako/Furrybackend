@@ -58,6 +58,15 @@ class Task(BaseModel):
     class Config:
         orm_mode = True
 
+class File(BaseModel):
+    id: int
+    task_id: int
+    file_path: str
+    file_BLOB: bytes
+
+    class Config:
+        orm_mode = True
+
 class TaskMaterial(BaseModel):
     task_id: int
     material_id: int
