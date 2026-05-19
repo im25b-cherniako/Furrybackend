@@ -18,19 +18,74 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
+"""
+Insert-Routes
+"""
 @app.post("/users/", status_code=status.HTTP_201_CREATED)
 async def create_user(user: pydantic_models.User, db: db_dependency):
     db_user = models.User(**user.model_dump())
     db.add(db_user)
     db.commit()
 
+@app.post("/material/", status_code=status.HTTP_201_CREATED)
+async def create_material(material: pydantic_models.Material, db: db_dependency):
+    db_material = models.Material(**material.model_dump())
+    db.add(db_material)
+    db.commit()
 
+@app.post("/category/", status_code=status.HTTP_201_CREATED)
+async def create_category(category: pydantic_models.Category, db: db_dependency):
+    db_category = models.Category(**category.model_dump())
+    db.add(db_category)
+    db.commit()
+    db.refresh(db_category)
+
+@app.post("/priority/", status_code=status.HTTP_201_CREATED)
+async def create_priority(priority: pydantic_models.Priority, db: db_dependency):
+    db_priority = models.Priority(**priority.model_dump())
+    db.add(db_priority)
+    db.commit()
+    db.refresh(db_priority)
+
+@app.post("/progress/", status_code=status.HTTP_201_CREATED)
+async def create_progress(progress: pydantic_models.Progress, db: db_dependency):
+    db_progress = models.Progress(**progress.model_dump())
+    db.add(db_progress)
+    db.commit()
+    db.refresh(db_progress)
+
+@app.post("/task/", status_code=status.HTTP_201_CREATED)
+async def create_task(task: pydantic_models.Task, db: db_dependency):
+    db_task = models.Task(**task.model_dump())
+    db.add(db_task)
+    db.commit()
+    db.refresh(db_task)
+
+@app.post("/file/", status_code=status.HTTP_201_CREATED)
+async def create_file(file: pydantic_models.File, db: db_dependency):
+    db_file = models.File(**file.model_dump())
+    db.add(db_file)
+    db.commit()
+    db.refresh(db_file)
+
+@app.post("/taskmaterial/", status_code=status.HTTP_201_CREATED)
+async def create_taskmaterial(taskmaterial: pydantic_models.TaskMaterial, db: db_dependency):
+    db_taskmaterial = models.TaskMaterial(**taskmaterial.model_dump())
+    db.add(db_taskmaterial)
+    db.commit()
+    db.refresh(db_taskmaterial)
+
+
+
+"""
+Selects
+"""
 @app.get("/users/{user_id}", status_code=status.HTTP_201_CREATED)
 async def read_user(user_id: int, db: db_dependency):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail='User not found')
-    return
+    return user
 
 @app.get("/users/{user_id}", response_model=pydantic_models.User)
 def get_one_user(user_id: int, db: Session = Depends(get_db)):
@@ -97,3 +152,5 @@ def get_one_task_material(material_id: int, task_id: int, db: Session = Depends(
 @app.get("/task-materials", response_model=List[pydantic_models.TaskMaterial])
 def get_all_task_materials(db: Session = Depends(get_db)):
     return db.query(models.TaskMaterial).all()
+
+
