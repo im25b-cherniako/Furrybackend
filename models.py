@@ -1,5 +1,4 @@
 from sqlalchemy import Boolean, Column, Integer, String, Text, DateTime, ForeignKey, BLOB
-from sqlalchemy.dialects.mysql import DATETIME
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -10,14 +9,14 @@ class User(Base):
     name = Column("BenutzerName", String(100), nullable=False)
     pwd = Column("BenutzerPWD", String(100), nullable=False)
 
-    task_owner = relationship("Task", back_populates="users")
+    tasks = relationship("Task", back_populates="users")
 class Material(Base):
     __tablename__ = "Material"
     id = Column("MaterialID", Integer, primary_key=True)
     material = Column("Material", String(100), nullable=False)
     is_active = Column("IstAktiv", Boolean, nullable=False, default=True)
 
-    task_material_owner = relationship("TaskMaterial", back_populates="materials")
+    task_materials = relationship("TaskMaterial", back_populates="materials")
 class Category(Base):
     __tablename__ = "Kategorie"
     id = Column("KategorieID", Integer, primary_key=True)
