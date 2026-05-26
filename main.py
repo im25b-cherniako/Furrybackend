@@ -1,8 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends, status
 from typing import Annotated, List
-
-from sqlalchemy.sql.functions import user
-
 import models
 import pydantic_models
 from database import engine, SessionLocal
@@ -78,6 +75,64 @@ async def create_taskmaterial(taskmaterial: pydantic_models.TaskMaterial, db: db
     db.commit()
     db.refresh(db_taskmaterial)
 
+"""
+Delete-Routes
+"""
+@app.delete("/users/{user_id}")
+async def delete_user(user_id: int, db: db_dependency):
+    user = models.User
+    db_user = db.query(user).filter(user.id == user_id).first()
+    db.delete(db_user)
+    db.commit()
+
+@app.delete("/materials/{material_id}")
+async def delete_material(material_id: int, db: db_dependency):
+    material = models.Material
+    db_material = db.query(material).filter(material.id == material_id).first()
+    db.delete(db_material)
+    db.commit()
+
+@app.delete("/categories/{category_id}")
+async def delete_category(category_id: int, db: db_dependency):
+    category = models.Category
+    db_category = db.query(category).filter(category.id == category_id).first()
+    db.delete(db_category)
+    db.commit()
+
+@app.delete("/priorities/{priority_id}")
+async def delete_priority(priority_id: int, db: db_dependency):
+    priority = models.Priority
+    db_priority = db.query(priority).filter(priority.id == priority_id).first()
+    db.delete(db_priority)
+    db.commit()
+
+@app.delete("/priorities/{priority_id}")
+async def delete_priority(priority_id: int, db: db_dependency):
+    priority = models.Priority
+    db_priority = db.query(priority).filter(priority.id == priority_id).first()
+    db.delete(db_priority)
+    db.commit()
+
+@app.delete("/progresses/{progress_id}")
+async def delete_progress(progress_id: int, db: db_dependency):
+    progress = models.Progress
+    db_progress = db.query(progress).filter(progress.id == progress_id).first()
+    db.delete(db_progress)
+    db.commit()
+
+@app.delete("/progresses/{progress_id}")
+async def delete_progress(progress_id: int, db: db_dependency):
+    progress = models.Progress
+    db_progress = db.query(progress).filter(progress.id == progress_id).first()
+    db.delete(db_progress)
+    db.commit()
+
+@app.delete("/tasks/{task_id}")
+async def delete_task(task_id: int, db: db_dependency):
+    task = models.Task
+    db_task = db.query(task).filter(task.id == task_id).first()
+    db.delete(db_task)
+    db.commit()
 
 """
 Update-Routes
@@ -196,6 +251,19 @@ async def update_task_material(task_id: int, material_id: int, task_material_dat
     db.refresh(task_material)
     return task_material
 
+@app.delete("/files/{file_id}")
+async def delete_file(file_id: int, db: db_dependency):
+    file = models.File
+    db_file = db.query(file).filter(file.id == file_id).first()
+    db.delete(db_file)
+    db.commit()
+
+@app.delete("/taskmaterials/{taskmaterial_id}")
+async def delete_taskmaterial(taskmaterial_id: int, db: db_dependency):
+    taskmaterial = models.TaskMaterial
+    db_taskmaterial = db.query(taskmaterial).filter(taskmaterial.id == taskmaterial_id).first()
+    db.delete(db_taskmaterial)
+    db.commit()
 
 """
 Selects
