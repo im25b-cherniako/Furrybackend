@@ -27,55 +27,126 @@ async def create_user(user: pydantic_models.User, db: db_dependency):
     db.add(db_user)
     db.commit()
 
-@app.post("/material/", status_code=status.HTTP_201_CREATED)
+@app.post("/materials/", status_code=status.HTTP_201_CREATED)
 async def create_material(material: pydantic_models.Material, db: db_dependency):
     db_material = models.Material(**material.model_dump())
     db.add(db_material)
     db.commit()
 
-@app.post("/category/", status_code=status.HTTP_201_CREATED)
+@app.post("/categories/", status_code=status.HTTP_201_CREATED)
 async def create_category(category: pydantic_models.Category, db: db_dependency):
     db_category = models.Category(**category.model_dump())
     db.add(db_category)
     db.commit()
     db.refresh(db_category)
 
-@app.post("/priority/", status_code=status.HTTP_201_CREATED)
+@app.post("/priorities/", status_code=status.HTTP_201_CREATED)
 async def create_priority(priority: pydantic_models.Priority, db: db_dependency):
     db_priority = models.Priority(**priority.model_dump())
     db.add(db_priority)
     db.commit()
     db.refresh(db_priority)
 
-@app.post("/progress/", status_code=status.HTTP_201_CREATED)
+@app.post("/progresses/", status_code=status.HTTP_201_CREATED)
 async def create_progress(progress: pydantic_models.Progress, db: db_dependency):
     db_progress = models.Progress(**progress.model_dump())
     db.add(db_progress)
     db.commit()
     db.refresh(db_progress)
 
-@app.post("/task/", status_code=status.HTTP_201_CREATED)
+@app.post("/tasks/", status_code=status.HTTP_201_CREATED)
 async def create_task(task: pydantic_models.Task, db: db_dependency):
     db_task = models.Task(**task.model_dump())
     db.add(db_task)
     db.commit()
     db.refresh(db_task)
 
-@app.post("/file/", status_code=status.HTTP_201_CREATED)
+@app.post("/files/", status_code=status.HTTP_201_CREATED)
 async def create_file(file: pydantic_models.File, db: db_dependency):
     db_file = models.File(**file.model_dump())
     db.add(db_file)
     db.commit()
     db.refresh(db_file)
 
-@app.post("/taskmaterial/", status_code=status.HTTP_201_CREATED)
+@app.post("/taskmaterials/", status_code=status.HTTP_201_CREATED)
 async def create_taskmaterial(taskmaterial: pydantic_models.TaskMaterial, db: db_dependency):
     db_taskmaterial = models.TaskMaterial(**taskmaterial.model_dump())
     db.add(db_taskmaterial)
     db.commit()
     db.refresh(db_taskmaterial)
 
+"""
+Delete-Routes
+"""
+@app.delete("/users/{user_id}")
+async def delete_user(user_id: int, db: db_dependency):
+    user = models.User
+    db_user = db.query(user).filter(user.id == user_id).first()
+    db.delete(db_user)
+    db.commit()
 
+@app.delete("/materials/{material_id}")
+async def delete_material(material_id: int, db: db_dependency):
+    material = models.Material
+    db_material = db.query(material).filter(material.id == material_id).first()
+    db.delete(db_material)
+    db.commit()
+
+@app.delete("/categories/{category_id}")
+async def delete_category(category_id: int, db: db_dependency):
+    category = models.Category
+    db_category = db.query(category).filter(category.id == category_id).first()
+    db.delete(db_category)
+    db.commit()
+
+@app.delete("/priorities/{priority_id}")
+async def delete_priority(priority_id: int, db: db_dependency):
+    priority = models.Priority
+    db_priority = db.query(priority).filter(priority.id == priority_id).first()
+    db.delete(db_priority)
+    db.commit()
+
+@app.delete("/priorities/{priority_id}")
+async def delete_priority(priority_id: int, db: db_dependency):
+    priority = models.Priority
+    db_priority = db.query(priority).filter(priority.id == priority_id).first()
+    db.delete(db_priority)
+    db.commit()
+
+@app.delete("/progresses/{progress_id}")
+async def delete_progress(progress_id: int, db: db_dependency):
+    progress = models.Progress
+    db_progress = db.query(progress).filter(progress.id == progress_id).first()
+    db.delete(db_progress)
+    db.commit()
+
+@app.delete("/progresses/{progress_id}")
+async def delete_progress(progress_id: int, db: db_dependency):
+    progress = models.Progress
+    db_progress = db.query(progress).filter(progress.id == progress_id).first()
+    db.delete(db_progress)
+    db.commit()
+
+@app.delete("/tasks/{task_id}")
+async def delete_task(task_id: int, db: db_dependency):
+    task = models.Task
+    db_task = db.query(task).filter(task.id == task_id).first()
+    db.delete(db_task)
+    db.commit()
+
+@app.delete("/files/{file_id}")
+async def delete_file(file_id: int, db: db_dependency):
+    file = models.File
+    db_file = db.query(file).filter(file.id == file_id).first()
+    db.delete(db_file)
+    db.commit()
+
+@app.delete("/taskmaterials/{taskmaterial_id}")
+async def delete_taskmaterial(taskmaterial_id: int, db: db_dependency):
+    taskmaterial = models.TaskMaterial
+    db_taskmaterial = db.query(taskmaterial).filter(taskmaterial.id == taskmaterial_id).first()
+    db.delete(db_taskmaterial)
+    db.commit()
 
 """
 Selects
