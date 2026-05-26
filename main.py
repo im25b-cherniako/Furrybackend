@@ -1,5 +1,8 @@
 from fastapi import FastAPI, HTTPException, Depends, status
 from typing import Annotated, List
+
+from sqlalchemy.sql.functions import user
+
 import models
 import pydantic_models
 from database import engine, SessionLocal
@@ -27,54 +30,171 @@ async def create_user(user: pydantic_models.User, db: db_dependency):
     db.add(db_user)
     db.commit()
 
-@app.post("/material/", status_code=status.HTTP_201_CREATED)
+@app.post("/materials/", status_code=status.HTTP_201_CREATED)
 async def create_material(material: pydantic_models.Material, db: db_dependency):
     db_material = models.Material(**material.model_dump())
     db.add(db_material)
     db.commit()
 
-@app.post("/category/", status_code=status.HTTP_201_CREATED)
+@app.post("/categories/", status_code=status.HTTP_201_CREATED)
 async def create_category(category: pydantic_models.Category, db: db_dependency):
     db_category = models.Category(**category.model_dump())
     db.add(db_category)
     db.commit()
     db.refresh(db_category)
 
-@app.post("/priority/", status_code=status.HTTP_201_CREATED)
+@app.post("/priorities/", status_code=status.HTTP_201_CREATED)
 async def create_priority(priority: pydantic_models.Priority, db: db_dependency):
     db_priority = models.Priority(**priority.model_dump())
     db.add(db_priority)
     db.commit()
     db.refresh(db_priority)
 
-@app.post("/progress/", status_code=status.HTTP_201_CREATED)
+@app.post("/progresses/", status_code=status.HTTP_201_CREATED)
 async def create_progress(progress: pydantic_models.Progress, db: db_dependency):
     db_progress = models.Progress(**progress.model_dump())
     db.add(db_progress)
     db.commit()
     db.refresh(db_progress)
 
-@app.post("/task/", status_code=status.HTTP_201_CREATED)
+@app.post("/tasks/", status_code=status.HTTP_201_CREATED)
 async def create_task(task: pydantic_models.Task, db: db_dependency):
     db_task = models.Task(**task.model_dump())
     db.add(db_task)
     db.commit()
     db.refresh(db_task)
 
-@app.post("/file/", status_code=status.HTTP_201_CREATED)
+@app.post("/files/", status_code=status.HTTP_201_CREATED)
 async def create_file(file: pydantic_models.File, db: db_dependency):
     db_file = models.File(**file.model_dump())
     db.add(db_file)
     db.commit()
     db.refresh(db_file)
 
-@app.post("/taskmaterial/", status_code=status.HTTP_201_CREATED)
+@app.post("/taskmaterials/", status_code=status.HTTP_201_CREATED)
 async def create_taskmaterial(taskmaterial: pydantic_models.TaskMaterial, db: db_dependency):
     db_taskmaterial = models.TaskMaterial(**taskmaterial.model_dump())
     db.add(db_taskmaterial)
     db.commit()
     db.refresh(db_taskmaterial)
 
+
+"""
+Update-Routes
+"""
+@app.put("/users/{user_id}", response_model=pydantic_models.User)
+async def update_user(user_id: int, user_data: pydantic_models.User, db: db_dependency):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail='User not found')
+
+    user.name = user_data.name
+    user.pwd = user_data.pwd
+
+    db.commit()
+    db.refresh(user)
+    return user
+
+@app.put("/materials/{material_id}", response_model=pydantic_models.Material)
+async def update_material(material_id: int, material_data: pydantic_models.Material, db: db_dependency):
+    material = db.query(models.Material).filter(models.Material.id == material_id).first()
+    if material is None:
+        raise HTTPException(status_code=404, detail='Material not found')
+
+    material.material = material_data.material
+    material.is_active = material_data.is_active
+
+    db.commit()
+    db.refresh(material)
+    return material
+
+@app.put("/categories/{category_id}", response_model=pydantic_models.Category)
+async def update_category(category_id: int, category_data: pydantic_models.Category, db: db_dependency):
+    category = db.query(models.Category).filter(models.Category.id == category_id).first()
+    if category is None:
+        raise HTTPException(status_code=404, detail='Category not found')
+
+    category.category = category_data.category
+    category.is_active = category_data.is_active
+
+    db.commit()
+    db.refresh(category)
+    return category
+
+@app.put("/priorities/{priority_id}", response_model=pydantic_models.Priority)
+async def update_priority(priority_id: int, priority_data: pydantic_models.Priority, db: db_dependency):
+    priority = db.query(models.Priority).filter(models.Priority.id == priority_id).first()
+    if priority is None:
+        raise HTTPException(status_code=404, detail='Priority not found')
+
+    priority.priority = priority_data.priority
+
+    db.commit()
+    db.refresh(priority)
+    return priority
+
+@app.put("/progresses/{progress_id}", response_model=pydantic_models.Progress)
+async def update_progress(progress_id: int, progress_data: pydantic_models.Progress, db: db_dependency):
+    progress = db.query(models.Progress).filter(models.Progress.id == progress_id).first()
+    if progress is None:
+        raise HTTPException(status_code=404, detail='Progress not found')
+
+    progress.progress = progress_data.progress
+
+    db.commit()
+    db.refresh(progress)
+    return progress
+
+@app.put("/tasks/{task_id}", response_model=pydantic_models.Task)
+async def update_task(task_id: int, task_data: pydantic_models.Task, db: db_dependency):
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if task is None:
+        raise HTTPException(status_code=404, detail='Task not found')
+
+    task.title = task_data.title
+    task.begin = task_data.begin
+    task.end = task_data.end
+    task.place = task_data.place
+    task.coordinates = task_data.coordinates
+    task.notice = task_data.notice
+    task.category_id = task_data.category_id
+    task.priority_id = task_data.priority_id
+    task.progress_id = task_data.progress_id
+    task.user_id = task_data.user_id
+
+    db.commit()
+    db.refresh(task)
+    return task
+
+@app.put("/files/{file_id}", response_model=pydantic_models.File)
+async def update_file(file_id: int, file_data: pydantic_models.File, db: db_dependency):
+    file = db.query(models.File).filter(models.File.id == file_id).first()
+    if file is None:
+        raise HTTPException(status_code=404, detail='File not found')
+
+    file.task_id = file_data.task_id
+    file.file_path = file_data.file_path
+    file.file_BLOB = file_data.file_BLOB
+
+    db.commit()
+    db.refresh(file)
+    return file
+
+@app.put("/taskmaterials/{task_id}/{material_id}", response_model=pydantic_models.TaskMaterial)
+async def update_task_material(task_id: int, material_id: int, task_material_data: pydantic_models.TaskMaterial, db: db_dependency):
+    task_material = db.query(models.TaskMaterial).filter(
+        models.TaskMaterial.task_id == task_id, models.TaskMaterial.material_id == material_id
+        ).first()
+    if task_material is None:
+        raise HTTPException(status_code=404, detail='User not found')
+
+    task_material.material_id = task_material_data.material_id
+    task_material.task_id = task_material_data.task_id
+    task_material.amount = task_material_data.amount
+
+    db.commit()
+    db.refresh(task_material)
+    return task_material
 
 
 """
@@ -88,84 +208,84 @@ async def read_user(user_id: int, db: db_dependency):
     return user
 
 @app.get("/users/{user_id}", response_model=pydantic_models.User)
-def get_one_user(user_id: int, db: Session = Depends(get_db)):
+def get_one_user(user_id: int, db: db_dependency):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail='User not found')
     return user
 
 @app.get("/users", response_model=List[pydantic_models.User])
-def get_all_users(db: Session = Depends(get_db)):
+def get_all_users(db: db_dependency):
     return db.query(models.User).all()
 
 @app.get("/materials/{material_id}", response_model=pydantic_models.Material)
-def get_one_material(material_id: int, db: Session = Depends(get_db)):
+def get_one_material(material_id: int, db: db_dependency):
     material = db.query(models.Material).filter(models.Material.id == material_id).first()
     if material is None:
         raise HTTPException(status_code=404, detail='Material not found')
     return material
 
 @app.get("/materials", response_model=List[pydantic_models.Material])
-def get_all_materials(db: Session = Depends(get_db)):
+def get_all_materials(db: db_dependency):
     return db.query(models.Material).all()
 
 @app.get("/categories/{category_id}", response_model=pydantic_models.Category)
-def get_one_category(category_id: int, db: Session = Depends(get_db)):
+def get_one_category(category_id: int, db: db_dependency):
     category = db.query(models.Category).filter(models.Category.id == category_id).first()
     if category is None:
         raise HTTPException(status_code=404, detail='Category not found')
     return category
 
 @app.get("/categories", response_model=List[pydantic_models.Category])
-def get_all_categories(db: Session = Depends(get_db)):
+def get_all_categories(db: db_dependency):
     return db.query(models.Category).all()
 
 @app.get("/priorities/{priority_id}", response_model=pydantic_models.Priority)
-def get_one_priority(priority_id: int, db: Session = Depends(get_db)):
+def get_one_priority(priority_id: int, db: db_dependency):
     priority = db.query(models.Priority).filter(models.Priority.id == priority_id).first()
     if priority is None:
         raise HTTPException(status_code=404, detail='Priority not found')
     return priority
 
 @app.get("/priorities", response_model=List[pydantic_models.Priority])
-def get_all_priorities(db: Session = Depends(get_db)):
+def get_all_priorities(db: db_dependency):
     return db.query(models.Priority).all()
 
 @app.get("/progresses/{progress_id}", response_model=pydantic_models.Progress)
-def get_one_progress(progress_id: int, db: Session = Depends(get_db)):
+def get_one_progress(progress_id: int, db: db_dependency):
     progress = db.query(models.Progress).filter(models.Progress.id == progress_id).first()
     if progress is None:
         raise HTTPException(status_code=404, detail='Progress not found')
     return progress
 
 @app.get("/progresses", response_model=List[pydantic_models.Progress])
-def get_all_progresses(db: Session = Depends(get_db)):
+def get_all_progresses(db: db_dependency):
     return db.query(models.Progress).all()
 
 @app.get("/tasks/{task_id}", response_model=pydantic_models.Task)
-def get_one_task(task_id: int, db: Session = Depends(get_db)):
+def get_one_task(task_id: int, db: db_dependency):
     task = db.query(models.Task).filter(models.Task.id == task_id).first()
     if task is None:
         raise HTTPException(status_code=404, detail='Task not found')
     return task
 
 @app.get("/tasks", response_model=List[pydantic_models.Task])
-def get_all_tasks(db: Session = Depends(get_db)):
+def get_all_tasks(db: db_dependency):
     return db.query(models.Task).all()
 
 @app.get("/files/{file_id}", response_model=pydantic_models.File)
-def get_one_file(file_id: int, db: Session = Depends(get_db)):
+def get_one_file(file_id: int, db: db_dependency):
     file = db.query(models.File).filter(models.File.id == file_id).first()
     if file is None:
         raise HTTPException(status_code=404, detail='File not found')
     return file
 
 @app.get("/files", response_model=List[pydantic_models.File])
-def get_all_files(db: Session = Depends(get_db)):
+def get_all_files(db: db_dependency):
     return db.query(models.File).all()
 
 @app.get("/task-materials/{material_id}/{task_id}", response_model=pydantic_models.TaskMaterial)
-def get_one_task_material(material_id: int, task_id: int, db: Session = Depends(get_db)):
+def get_one_task_material(material_id: int, task_id: int, db: db_dependency):
     task_material = db.query(models.TaskMaterial).filter(
         models.TaskMaterial.material_id == material_id, models.TaskMaterial.task_id == task_id
         ).first()
@@ -174,7 +294,5 @@ def get_one_task_material(material_id: int, task_id: int, db: Session = Depends(
     return task_material
 
 @app.get("/task-materials", response_model=List[pydantic_models.TaskMaterial])
-def get_all_task_materials(db: Session = Depends(get_db)):
+def get_all_task_materials(db: db_dependency):
     return db.query(models.TaskMaterial).all()
-
-

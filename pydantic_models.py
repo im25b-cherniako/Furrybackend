@@ -4,18 +4,18 @@ from datetime import datetime
 from typing import Optional
 
 
-class Material(BaseModel):
-    id: int
-    material: str
-    is_active: bool
-
-    class Config:
-        orm_mode = True
-
 class User(BaseModel):
     id: int
     name: str
     pwd: str
+
+    class Config:
+        orm_mode = True
+
+class Material(BaseModel):
+    id: int
+    material: str
+    is_active: bool
 
     class Config:
         orm_mode = True
