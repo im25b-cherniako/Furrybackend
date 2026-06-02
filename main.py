@@ -120,18 +120,25 @@ async def delete_progress(progress_id: int, db: db_dependency):
     db.delete(db_progress)
     db.commit()
 
-@app.delete("/progresses/{progress_id}")
-async def delete_progress(progress_id: int, db: db_dependency):
-    progress = models.Progress
-    db_progress = db.query(progress).filter(progress.id == progress_id).first()
-    db.delete(db_progress)
-    db.commit()
-
 @app.delete("/tasks/{task_id}")
 async def delete_task(task_id: int, db: db_dependency):
     task = models.Task
     db_task = db.query(task).filter(task.id == task_id).first()
     db.delete(db_task)
+    db.commit()
+
+@app.delete("/files/{file_id}")
+async def delete_file(file_id: int, db: db_dependency):
+    file = models.File
+    db_file = db.query(file).filter(file.id == file_id).first()
+    db.delete(db_file)
+    db.commit()
+
+@app.delete("/taskmaterials/{taskmaterial_id}")
+async def delete_taskmaterial(taskmaterial_id: int, db: db_dependency):
+    taskmaterial = models.TaskMaterial
+    db_taskmaterial = db.query(taskmaterial).filter(taskmaterial.id == taskmaterial_id).first()
+    db.delete(db_taskmaterial)
     db.commit()
 
 """
@@ -251,20 +258,6 @@ async def update_task_material(task_id: int, material_id: int, task_material_dat
     db.refresh(task_material)
     return task_material
 
-@app.delete("/files/{file_id}")
-async def delete_file(file_id: int, db: db_dependency):
-    file = models.File
-    db_file = db.query(file).filter(file.id == file_id).first()
-    db.delete(db_file)
-    db.commit()
-
-@app.delete("/taskmaterials/{taskmaterial_id}")
-async def delete_taskmaterial(taskmaterial_id: int, db: db_dependency):
-    taskmaterial = models.TaskMaterial
-    db_taskmaterial = db.query(taskmaterial).filter(taskmaterial.id == taskmaterial_id).first()
-    db.delete(db_taskmaterial)
-    db.commit()
-
 """
 Selects
 """
@@ -364,3 +357,17 @@ def get_one_task_material(material_id: int, task_id: int, db: db_dependency):
 @app.get("/task-materials", response_model=List[pydantic_models.TaskMaterial])
 def get_all_task_materials(db: db_dependency):
     return db.query(models.TaskMaterial).all()
+
+
+"""
+Stored Procedure
+"""
+@app.get("/task-users/")
+async def get_task_user(db: db_dependency):
+    task_model = models.Task
+    user_model = models.User
+
+    qr_task_user = db.query(user_model.name, task_model.title, task_model.notice, task_model.place).join(user_model,
+                                                                                                         user_model.id == task_model.user_id).all()
+    qr_result = [row._asdict() for row in qr_task_user]
+    return qr_result
