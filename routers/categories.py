@@ -44,3 +44,13 @@ async def update_category(category_id: int, category_data: pydantic_models.Categ
     db.refresh(category)
     return category
 
+@router.get("/{category_id}", response_model=pydantic_models.Category)
+def get_one_category(category_id: int, db: db_dependency):
+    category = db.query(models.Category).filter(models.Category.id == category_id).first()
+    if category is None:
+        raise HTTPException(status_code=404, detail='Category not found')
+    return category
+
+@router.get("/", response_model=List[pydantic_models.Category])
+def get_all_categories(db: db_dependency):
+    return db.query(models.Category).all()

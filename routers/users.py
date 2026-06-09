@@ -34,7 +34,7 @@ async def create_user(user: pydantic_models.User, db: db_dependency):
     db.commit()
 
 
-@router.delete("/{user_id}/", status_code=status.HTTP_200_OK, response_model=pydantic_models.User)
+@router.delete("/{user_id}", status_code=status.HTTP_200_OK, response_model=pydantic_models.User)
 async def delete_user(user_id: int, db: db_dependency):
     db_user = db.execute(select(models.User).where(models.User.user_id == user_id))
 
@@ -44,7 +44,7 @@ async def delete_user(user_id: int, db: db_dependency):
     db.commit()
 
 
-@router.get("/{user_id}/", status_code=status.HTTP_200_OK, response_model=pydantic_models.User)
+@router.get("/{user_id}", status_code=status.HTTP_200_OK, response_model=pydantic_models.User)
 def get_one_user(user_id: int, db: db_dependency):
     user = db.query(models.User).filter(models.User.id == user_id).first()
 
@@ -53,7 +53,7 @@ def get_one_user(user_id: int, db: db_dependency):
     return user
 
 
-@router.put("/{user_id}/", status_code=status.HTTP_200_OK, response_model=pydantic_models.User)
+@router.put("/{user_id}", status_code=status.HTTP_200_OK, response_model=pydantic_models.User)
 async def update_user(user_id: int, user_data: pydantic_models.User, db: db_dependency):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if user is None:
