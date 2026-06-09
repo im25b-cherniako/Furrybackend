@@ -1,31 +1,23 @@
 from fastapi import FastAPI, HTTPException, Depends, status
 from typing import Annotated, List
+from routers import users, materials
 import models
 import pydantic_models
+from database import get_db
 from database import engine, SessionLocal
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
+from sqlalchemy import select
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 db_dependency = Annotated[Session, Depends(get_db)]
+
+app.include_router(users.router)
+app.include_router(materials.router)
 
 """
 Insert-Routes
 """
-@app.post("/users/", status_code=status.HTTP_201_CREATED)
-async def create_user(user: pydantic_models.User, db: db_dependency):
-    db_user = models.User(**user.model_dump())
-    db.add(db_user)
-    db.commit()
 
 @app.post("/materials/", status_code=status.HTTP_201_CREATED)
 async def create_material(material: pydantic_models.Material, db: db_dependency):
@@ -78,17 +70,13 @@ async def create_taskmaterial(taskmaterial: pydantic_models.TaskMaterial, db: db
 """
 Delete-Routes
 """
-@app.delete("/users/{user_id}")
-async def delete_user(user_id: int, db: db_dependency):
-    user = models.User
-    db_user = db.query(user).filter(user.id == user_id).first()
-    db.delete(db_user)
-    db.commit()
 
 @app.delete("/materials/{material_id}")
 async def delete_material(material_id: int, db: db_dependency):
     material = models.Material
     db_material = db.query(material).filter(material.id == material_id).first()
+    if db_material is None:
+        raise HTTPException(status_code=404, detail="Material not found")
     db.delete(db_material)
     db.commit()
 
@@ -96,6 +84,8 @@ async def delete_material(material_id: int, db: db_dependency):
 async def delete_category(category_id: int, db: db_dependency):
     category = models.Category
     db_category = db.query(category).filter(category.id == category_id).first()
+    if db_category is None:
+        raise HTTPException(status_code=404, detail="Category not found")
     db.delete(db_category)
     db.commit()
 
@@ -103,13 +93,8 @@ async def delete_category(category_id: int, db: db_dependency):
 async def delete_priority(priority_id: int, db: db_dependency):
     priority = models.Priority
     db_priority = db.query(priority).filter(priority.id == priority_id).first()
-    db.delete(db_priority)
-    db.commit()
-
-@app.delete("/priorities/{priority_id}")
-async def delete_priority(priority_id: int, db: db_dependency):
-    priority = models.Priority
-    db_priority = db.query(priority).filter(priority.id == priority_id).first()
+    if db_priority is None:
+        raise HTTPException(status_code=404, detail="Priority not found")
     db.delete(db_priority)
     db.commit()
 
@@ -117,6 +102,8 @@ async def delete_priority(priority_id: int, db: db_dependency):
 async def delete_progress(progress_id: int, db: db_dependency):
     progress = models.Progress
     db_progress = db.query(progress).filter(progress.id == progress_id).first()
+    if db_progress is None:
+        raise HTTPException(status_code=404, detail="Progress not found")
     db.delete(db_progress)
     db.commit()
 
@@ -124,6 +111,8 @@ async def delete_progress(progress_id: int, db: db_dependency):
 async def delete_task(task_id: int, db: db_dependency):
     task = models.Task
     db_task = db.query(task).filter(task.id == task_id).first()
+    if db_task is None:
+        raise HTTPException(status_code=404, detail="Task not found")
     db.delete(db_task)
     db.commit()
 
@@ -131,6 +120,8 @@ async def delete_task(task_id: int, db: db_dependency):
 async def delete_file(file_id: int, db: db_dependency):
     file = models.File
     db_file = db.query(file).filter(file.id == file_id).first()
+    if db_file is None:
+        raise HTTPException(status_code=404, detail="File not found")
     db.delete(db_file)
     db.commit()
 
@@ -138,24 +129,14 @@ async def delete_file(file_id: int, db: db_dependency):
 async def delete_taskmaterial(taskmaterial_id: int, db: db_dependency):
     taskmaterial = models.TaskMaterial
     db_taskmaterial = db.query(taskmaterial).filter(taskmaterial.id == taskmaterial_id).first()
+    if db_taskmaterial is None:
+        raise HTTPException(status_code=404, detail="User or Material not found")
     db.delete(db_taskmaterial)
     db.commit()
 
 """
 Update-Routes
 """
-@app.put("/users/{user_id}", response_model=pydantic_models.User)
-async def update_user(user_id: int, user_data: pydantic_models.User, db: db_dependency):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if user is None:
-        raise HTTPException(status_code=404, detail='User not found')
-
-    user.name = user_data.name
-    user.pwd = user_data.pwd
-
-    db.commit()
-    db.refresh(user)
-    return user
 
 @app.put("/materials/{material_id}", response_model=pydantic_models.Material)
 async def update_material(material_id: int, material_data: pydantic_models.Material, db: db_dependency):
@@ -261,23 +242,6 @@ async def update_task_material(task_id: int, material_id: int, task_material_dat
 """
 Selects
 """
-@app.get("/users/{user_id}", status_code=status.HTTP_201_CREATED)
-async def read_user(user_id: int, db: db_dependency):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if user is None:
-        raise HTTPException(status_code=404, detail='User not found')
-    return user
-
-@app.get("/users/{user_id}", response_model=pydantic_models.User)
-def get_one_user(user_id: int, db: db_dependency):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if user is None:
-        raise HTTPException(status_code=404, detail='User not found')
-    return user
-
-@app.get("/users", response_model=List[pydantic_models.User])
-def get_all_users(db: db_dependency):
-    return db.query(models.User).all()
 
 @app.get("/materials/{material_id}", response_model=pydantic_models.Material)
 def get_one_material(material_id: int, db: db_dependency):
@@ -363,11 +327,9 @@ def get_all_task_materials(db: db_dependency):
 Stored Procedure
 """
 @app.get("/task-users/")
-async def get_task_user(db: db_dependency):
+async def get_task_users(db: db_dependency):
     task_model = models.Task
     user_model = models.User
+    result = db.execute(select(user_model.name, task_model.title, task_model.notice, task_model.place).join(user_model))
 
-    qr_task_user = db.query(user_model.name, task_model.title, task_model.notice, task_model.place).join(user_model,
-                                                                                                         user_model.id == task_model.user_id).all()
-    qr_result = [row._asdict() for row in qr_task_user]
-    return qr_result
+    return result.mappings().all()
