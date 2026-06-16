@@ -15,21 +15,23 @@ router = APIRouter(
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def create_taskmaterial(taskmaterial: pydantic_models.TaskMaterial, db: db_dependency):
     db_taskmaterial = models.TaskMaterial(**taskmaterial.model_dump())
     db.add(db_taskmaterial)
     db.commit()
     db.refresh(db_taskmaterial)
+    return db_taskmaterial
 
-@router.delete("/{taskmaterial_id}")
-async def delete_taskmaterial(taskmaterial_id: int, db: db_dependency):
-    taskmaterial = models.TaskMaterial
-    db_taskmaterial = db.query(taskmaterial).filter(taskmaterial.id == taskmaterial_id).first()
+@router.delete("/{task_id}/{material_id}", response_model=pydantic_models.Task)
+async def delete_taskmaterial(task_id: int, material_id: int, db: db_dependency):
+    db_taskmaterial = db.query(models.TaskMaterial).filter(
+        models.TaskMaterial.task_id == task_id, models.TaskMaterial.material_id == material_id).first()
     if db_taskmaterial is None:
-        raise HTTPException(status_code=404, detail="User or Material not found")
+        raise HTTPException(status_code=404, detail="Connection not found")
     db.delete(db_taskmaterial)
     db.commit()
+    return db_taskmaterial
 
 @router.put("/{task_id}/{material_id}", response_model=pydantic_models.TaskMaterial)
 async def update_task_material(task_id: int, material_id: int, task_material_data: pydantic_models.TaskMaterial, db: db_dependency):
@@ -37,7 +39,7 @@ async def update_task_material(task_id: int, material_id: int, task_material_dat
         models.TaskMaterial.task_id == task_id, models.TaskMaterial.material_id == material_id
         ).first()
     if task_material is None:
-        raise HTTPException(status_code=404, detail='User not found')
+        raise HTTPException(status_code=404, detail='Connection not found')
 
     task_material.material_id = task_material_data.material_id
     task_material.task_id = task_material_data.task_id
@@ -56,6 +58,6 @@ def get_one_task_material(material_id: int, task_id: int, db: db_dependency):
         raise HTTPException(status_code=404, detail='Connection not found')
     return task_material
 
-@router.get("/", response_model=List[pydantic_models.TaskMaterial])
+@router.get("", response_model=List[pydantic_models.TaskMaterial])
 def get_all_task_materials(db: db_dependency):
     return db.query(models.TaskMaterial).all()
