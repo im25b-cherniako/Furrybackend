@@ -31,3 +31,22 @@ async def get_task_users(db: db_dependency):
     result = db.execute(select(user_model.name, task_model.title, task_model.notice, task_model.place).join(user_model))
 
     return result.mappings().all()
+
+"""
+View
+"""
+
+@app.get("/aufgaben/details")
+def get_aufgaben_details():
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM vw_AufgabenDetails")
+
+    daten = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return daten
