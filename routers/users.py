@@ -15,9 +15,9 @@ router = APIRouter(
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=pydantic_models.User)
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=pydantic_models.User)
 async def create_user(user: pydantic_models.User, db: db_dependency):
-    result = db.execute(select(models.User).where(models.User.namr == user.name))
+    result = db.execute(select(models.User).where(models.User.name == user.name))
     existing_name = result.scalars().first()
     if existing_name:
         raise HTTPException(
@@ -32,17 +32,18 @@ async def create_user(user: pydantic_models.User, db: db_dependency):
 
     db.add(new_user)
     db.commit()
+    return new_user
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_200_OK, response_model=pydantic_models.User)
 async def delete_user(user_id: int, db: db_dependency):
-    db_user = db.execute(select(models.User).where(models.User.user_id == user_id))
+    db_user = db.execute(select(models.User).where(models.User.id == user_id)).scalars().first()
 
     if db_user is None:
         raise HTTPException(status_code=status.HTTP_200_OK, detail="User not found")
     db.delete(db_user)
     db.commit()
-
+    return db_user
 
 @router.get("/{user_id}", status_code=status.HTTP_200_OK, response_model=pydantic_models.User)
 def get_one_user(user_id: int, db: db_dependency):
@@ -51,7 +52,6 @@ def get_one_user(user_id: int, db: db_dependency):
     if user is None:
         raise HTTPException(status_code=404, detail='User not found')
     return user
-
 
 @router.put("/{user_id}", status_code=status.HTTP_200_OK, response_model=pydantic_models.User)
 async def update_user(user_id: int, user_data: pydantic_models.User, db: db_dependency):
@@ -66,7 +66,6 @@ async def update_user(user_id: int, user_data: pydantic_models.User, db: db_depe
     db.refresh(user)
     return user
 
-
-@router.get("/", response_model=List[pydantic_models.User])
+@router.get("", response_model=List[pydantic_models.User])
 def get_all_users(db: db_dependency):
     return db.query(models.User).all()
