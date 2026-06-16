@@ -15,21 +15,22 @@ router = APIRouter(
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def create_task(task: pydantic_models.Task, db: db_dependency):
     db_task = models.Task(**task.model_dump())
     db.add(db_task)
     db.commit()
     db.refresh(db_task)
+    return db_task
 
-@router.delete("/{task_id}")
+@router.delete("/{task_id}", response_model=pydantic_models.Task)
 async def delete_task(task_id: int, db: db_dependency):
-    task = models.Task
-    db_task = db.query(task).filter(task.id == task_id).first()
+    db_task = db.query(models.Task).filter(models.Task.id == task_id).first()
     if db_task is None:
         raise HTTPException(status_code=404, detail="Task not found")
     db.delete(db_task)
     db.commit()
+    return db_task
 
 @router.put("/{task_id}", response_model=pydantic_models.Task)
 async def update_task(task_id: int, task_data: pydantic_models.Task, db: db_dependency):
@@ -59,7 +60,6 @@ def get_one_task(task_id: int, db: db_dependency):
         raise HTTPException(status_code=404, detail='Task not found')
     return task
 
-@router.get("/", response_model=List[pydantic_models.Task])
+@router.get("", response_model=List[pydantic_models.Task])
 def get_all_tasks(db: db_dependency):
     return db.query(models.Task).all()
-
