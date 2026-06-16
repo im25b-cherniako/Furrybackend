@@ -23,7 +23,7 @@ async def create_taskmaterial(taskmaterial: pydantic_models.TaskMaterial, db: db
     db.refresh(db_taskmaterial)
     return db_taskmaterial
 
-@router.delete("/{task_id}/{material_id}", response_model=pydantic_models.Task)
+@router.delete("/{task_id}/{material_id}", response_model=pydantic_models.TaskMaterial)
 async def delete_taskmaterial(task_id: int, material_id: int, db: db_dependency):
     db_taskmaterial = db.query(models.TaskMaterial).filter(
         models.TaskMaterial.task_id == task_id, models.TaskMaterial.material_id == material_id).first()
