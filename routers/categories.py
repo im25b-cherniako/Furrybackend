@@ -15,12 +15,13 @@ router = APIRouter(
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def create_category(category: pydantic_models.Category, db: db_dependency):
     db_category = models.Category(**category.model_dump())
     db.add(db_category)
     db.commit()
     db.refresh(db_category)
+    return db_category
 
 @router.delete("/{category_id}")
 async def delete_category(category_id: int, db: db_dependency):
@@ -30,6 +31,7 @@ async def delete_category(category_id: int, db: db_dependency):
         raise HTTPException(status_code=404, detail="Category not found")
     db.delete(db_category)
     db.commit()
+    return db_category
 
 @router.put("/{category_id}", response_model=pydantic_models.Category)
 async def update_category(category_id: int, category_data: pydantic_models.Category, db: db_dependency):
@@ -51,6 +53,6 @@ def get_one_category(category_id: int, db: db_dependency):
         raise HTTPException(status_code=404, detail='Category not found')
     return category
 
-@router.get("/", response_model=List[pydantic_models.Category])
+@router.get("", response_model=List[pydantic_models.Category])
 def get_all_categories(db: db_dependency):
     return db.query(models.Category).all()
